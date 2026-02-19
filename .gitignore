@@ -1,3 +1,6 @@
+# Flutter SDK (local install)
+flutter_sdk/
+
 # Python
 __pycache__/
 *.py[cod]

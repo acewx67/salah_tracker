@@ -1,0 +1,142 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:salah_tracker/config/theme.dart';
+import 'package:salah_tracker/config/constants.dart';
+import 'package:salah_tracker/providers/providers.dart';
+import 'package:salah_tracker/widgets/rakat_selector.dart';
+
+/// A prayer card with Fardh toggle + Sunnah/Nafl scroll selectors.
+class PrayerCard extends ConsumerWidget {
+  final String prayerKey;
+  final String prayerName;
+
+  const PrayerCard({
+    super.key,
+    required this.prayerKey,
+    required this.prayerName,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final log = ref.watch(prayerLogProvider);
+    final notifier = ref.read(prayerLogProvider.notifier);
+
+    final isFardhDone = log.getFardh(prayerKey);
+    final sunnahValue = log.getSunnah(prayerKey);
+    final naflValue = log.getNafl(prayerKey);
+    final fardhRakats = PrayerConstants.fardhRakats[prayerKey] ?? 0;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── Prayer header ─────────────────────────────────
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isFardhDone
+                        ? AppTheme.primary.withOpacity(0.1)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isFardhDone ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: isFardhDone ? AppTheme.primary : Colors.grey,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        prayerName,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        '$fardhRakats Fardh Rakats',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // ─── Fardh toggle ──────────────────────────────────
+            GestureDetector(
+              onTap: () => notifier.toggleFardh(prayerKey),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: isFardhDone ? AppTheme.primary : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: isFardhDone
+                      ? [
+                          BoxShadow(
+                            color: AppTheme.primary.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isFardhDone ? Icons.check_rounded : Icons.circle_outlined,
+                      color: isFardhDone ? Colors.white : Colors.grey.shade600,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isFardhDone ? 'Fardh Completed ✓' : 'Tap to Mark Fardh',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: isFardhDone ? Colors.white : Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ─── Sunnah selector ───────────────────────────────
+            RakatSelector(
+              label: 'Sunnah Rakats',
+              selectedValue: sunnahValue,
+              onChanged: (val) => notifier.setSunnah(prayerKey, val),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ─── Nafl selector ─────────────────────────────────
+            RakatSelector(
+              label: 'Nafl Rakats',
+              selectedValue: naflValue,
+              onChanged: (val) => notifier.setNafl(prayerKey, val),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
