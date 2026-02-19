@@ -23,6 +23,7 @@ frontend/android/.gradle/
 frontend/android/local.properties
 frontend/ios/Pods/
 frontend/ios/.symlinks/
+frontend/web/
 frontend/.idea/
 frontend/*.iml
 
