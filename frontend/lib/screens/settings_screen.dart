@@ -16,9 +16,7 @@ class SettingsScreen extends ConsumerWidget {
     final notificationsEnabled = localStorage.notificationsEnabled;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -41,7 +39,10 @@ class SettingsScreen extends ConsumerWidget {
           _sectionHeader('Performance'),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.calendar_today, color: AppTheme.primary),
+              leading: const Icon(
+                Icons.calendar_today,
+                color: AppTheme.primary,
+              ),
               title: const Text('Performance Start Date'),
               subtitle: Text(
                 startDate != null
@@ -59,9 +60,14 @@ class SettingsScreen extends ConsumerWidget {
           _sectionHeader('Notifications'),
           Card(
             child: SwitchListTile(
-              secondary: const Icon(Icons.notifications_outlined, color: AppTheme.primary),
+              secondary: const Icon(
+                Icons.notifications_outlined,
+                color: AppTheme.primary,
+              ),
               title: const Text('Daily Reminders'),
-              subtitle: const Text('9 PM logging reminder & 5 AM missed prayer alert'),
+              subtitle: const Text(
+                '9 PM logging reminder & 5 AM missed prayer alert',
+              ),
               value: notificationsEnabled,
               activeThumbColor: AppTheme.primary,
               onChanged: (value) {
@@ -85,21 +91,55 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: Text(
                     '${localStorage.getUnsyncedLogs().length} unsynced entries',
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.sync),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Sync requires backend connection'),
-                          duration: Duration(seconds: 2),
+                  trailing: authState.isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.sync),
+                          onPressed: () async {
+                            if (authState.user == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please sign in to sync'),
+                                ),
+                              );
+                              return;
+                            }
+                            try {
+                              await ref
+                                  .read(authProvider.notifier)
+                                  .syncLogs(ref);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Sync successful'),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Sync failed: $e',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: Icon(Icons.delete_outline, color: Colors.red.shade400),
+                  leading: Icon(
+                    Icons.delete_outline,
+                    color: Colors.red.shade400,
+                  ),
                   title: const Text('Clear Local Data'),
                   subtitle: const Text('Remove all locally stored prayer logs'),
                   onTap: () => _confirmClearData(context, ref),
@@ -209,9 +249,9 @@ class SettingsScreen extends ConsumerWidget {
       ref.invalidate(prayerLogProvider);
       ref.invalidate(calendarLogsProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Local data cleared')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Local data cleared')));
       }
     }
   }

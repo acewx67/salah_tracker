@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:salah_tracker/config/constants.dart';
 import 'package:salah_tracker/models/prayer_log.dart';
 import 'package:salah_tracker/models/user.dart';
 
@@ -11,16 +9,16 @@ class ApiService {
   String? _authToken;
 
   ApiService({String? baseUrl})
-      : baseUrl = baseUrl ?? (Platform.isAndroid ? ApiConstants.baseUrl : ApiConstants.iosBaseUrl);
+    : baseUrl = baseUrl ?? 'http://192.168.29.13:8000' {
+    print('ApiService initialized with baseUrl: ${this.baseUrl}');
+  }
 
   void setAuthToken(String token) {
     _authToken = token;
   }
 
   Map<String, String> get _headers {
-    final h = <String, String>{
-      'Content-Type': 'application/json',
-    };
+    final h = <String, String>{'Content-Type': 'application/json'};
     if (_authToken != null) {
       h['Authorization'] = 'Bearer $_authToken';
     }
@@ -53,7 +51,8 @@ class ApiService {
   }
 
   Future<AppUser> updatePerformanceStartDate(DateTime date) async {
-    final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     final response = await http.put(
       Uri.parse('$baseUrl/auth/performance-start-date'),
       headers: _headers,
@@ -68,7 +67,8 @@ class ApiService {
   // ─── Prayer Logs ──────────────────────────────────────────────────
 
   Future<PrayerLog> getLog(DateTime date) async {
-    final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     final response = await http.get(
       Uri.parse('$baseUrl/logs/$dateStr'),
       headers: _headers,
@@ -92,8 +92,10 @@ class ApiService {
   }
 
   Future<List<PrayerLog>> getLogsRange(DateTime start, DateTime end) async {
-    final startStr = '${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}';
-    final endStr = '${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}';
+    final startStr =
+        '${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}';
+    final endStr =
+        '${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}';
     final response = await http.get(
       Uri.parse('$baseUrl/logs/range/?start=$startStr&end=$endStr'),
       headers: _headers,
@@ -121,9 +123,14 @@ class ApiService {
 
   // ─── Performance ──────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>> getPerformance(DateTime start, DateTime end) async {
-    final startStr = '${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}';
-    final endStr = '${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}';
+  Future<Map<String, dynamic>> getPerformance(
+    DateTime start,
+    DateTime end,
+  ) async {
+    final startStr =
+        '${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}';
+    final endStr =
+        '${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}';
     final response = await http.get(
       Uri.parse('$baseUrl/performance/?start=$startStr&end=$endStr'),
       headers: _headers,

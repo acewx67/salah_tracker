@@ -26,14 +26,21 @@ class AuthState {
   final AppUser? user;
   final String? token;
   final bool isLoading;
+  final DateTime? lastSyncAt;
 
-  AuthState({this.user, this.token, this.isLoading = false});
+  AuthState({this.user, this.token, this.isLoading = false, this.lastSyncAt});
 
-  AuthState copyWith({AppUser? user, String? token, bool? isLoading}) {
+  AuthState copyWith({
+    AppUser? user,
+    String? token,
+    bool? isLoading,
+    DateTime? lastSyncAt,
+  }) {
     return AuthState(
       user: user ?? this.user,
       token: token ?? this.token,
       isLoading: isLoading ?? this.isLoading,
+      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
     );
   }
 }
@@ -41,14 +48,16 @@ class AuthState {
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authService = ref.watch(authServiceProvider);
   final apiService = ref.watch(apiServiceProvider);
-  return AuthNotifier(authService, apiService);
+  final localStorage = ref.watch(localStorageProvider);
+  return AuthNotifier(authService, apiService, localStorage);
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
+  final LocalStorageService _localStorage;
 
-  AuthNotifier(this._authService, this._apiService)
+  AuthNotifier(this._authService, this._apiService, this._localStorage)
     : super(AuthState(isLoading: true)) {
     _init();
   }
@@ -66,8 +75,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
           if (token != null) {
             _apiService.setAuthToken(token);
           }
+
+          // If a different account signed in, clear local data first
+          final storedUserId = _localStorage.userId;
+          if (storedUserId != null && storedUserId != firebaseUser.uid) {
+            print('Different user detected — clearing local data');
+            await _localStorage.clearAll();
+          }
+          await _localStorage.setUserId(firebaseUser.uid);
+
           final appUser = await _apiService.getMe();
           state = AuthState(user: appUser, token: token, isLoading: false);
+
+          // Auto-pull remote data on login and update state to trigger UI rebuild
+          _pullRemoteLogs()
+              .then((_) {
+                state = state.copyWith(lastSyncAt: DateTime.now());
+              })
+              .catchError((Object e) {
+                print('Auto-pull error: $e');
+              });
         } catch (e) {
           print('Error loading user profile: $e');
           state = AuthState(user: null, token: null, isLoading: false);
@@ -84,7 +111,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         state = state.copyWith(isLoading: false);
         return;
       }
-      // The listener in _init will handle the state update upon successful Firebase sign-in.
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
@@ -93,7 +119,48 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> signOut() async {
     await _authService.signOut();
-    // The listener in _init will handle the state update.
+  }
+
+  Future<void> _pullRemoteLogs() async {
+    final now = DateTime.now();
+    final oneYearAgo = DateTime(now.year - 1, now.month, now.day);
+    print('[SYNC] Pulling remote logs from $oneYearAgo to $now');
+    try {
+      final remoteLogs = await _apiService.getLogsRange(oneYearAgo, now);
+      print('[SYNC] Got ${remoteLogs.length} remote logs');
+      for (final log in remoteLogs) {
+        final existing = _localStorage.getLog(log.date);
+        if (existing == null || existing.isSynced) {
+          await _localStorage.saveLog(log);
+          print('[SYNC] Saved log for ${log.date}');
+        }
+      }
+      print('[SYNC] Pull complete');
+    } catch (e, st) {
+      print('[SYNC] Pull failed: $e\n$st');
+    }
+  }
+
+  Future<void> syncLogs(WidgetRef ref) async {
+    try {
+      // Step 1: Push unsynced local logs to the backend
+      final unsynced = _localStorage.getUnsyncedLogs();
+      if (unsynced.isNotEmpty) {
+        final synced = await _apiService.batchSync(unsynced);
+        for (final log in synced) {
+          await _localStorage.markSynced(log.date);
+        }
+      }
+
+      // Step 2: Pull all logs from the backend and merge into local storage
+      await _pullRemoteLogs();
+
+      // Trigger UI rebuild in all watching providers
+      state = state.copyWith(lastSyncAt: DateTime.now());
+    } catch (e) {
+      print('Sync error: $e');
+      rethrow;
+    }
   }
 }
 
@@ -109,6 +176,9 @@ final prayerLogProvider = StateNotifierProvider<PrayerLogNotifier, PrayerLog>((
 ) {
   final localStorage = ref.watch(localStorageProvider);
   final selectedDate = ref.watch(selectedDateProvider);
+  // Rebuild when user changes (immediate) or when sync completes (data update)
+  ref.watch(authProvider.select((s) => s.user?.id));
+  ref.watch(authProvider.select((s) => s.lastSyncAt));
   return PrayerLogNotifier(localStorage, selectedDate);
 });
 
@@ -155,6 +225,9 @@ final calendarMonthProvider = StateProvider<DateTime>((ref) {
 final calendarLogsProvider = Provider<Map<DateTime, PrayerLog>>((ref) {
   final localStorage = ref.watch(localStorageProvider);
   final month = ref.watch(calendarMonthProvider);
+  // Rebuild when user changes (immediate) or when sync completes (data update)
+  ref.watch(authProvider.select((s) => s.user?.id));
+  ref.watch(authProvider.select((s) => s.lastSyncAt));
   final start = DateTime(month.year, month.month, 1);
   final end = DateTime(month.year, month.month + 1, 0);
   final logs = localStorage.getLogsRange(start, end);
