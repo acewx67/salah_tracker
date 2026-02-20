@@ -82,18 +82,39 @@ class PrayerLog {
     switch (prayer) {
       case 'fajr':
         fajrFardh = value;
+        if (!value) {
+          fajrSunnah = 0;
+          fajrNafl = 0;
+        }
         break;
       case 'dhuhr':
         dhuhrFardh = value;
+        if (!value) {
+          dhuhrSunnah = 0;
+          dhuhrNafl = 0;
+        }
         break;
       case 'asr':
         asrFardh = value;
+        if (!value) {
+          asrSunnah = 0;
+          asrNafl = 0;
+        }
         break;
       case 'maghrib':
         maghribFardh = value;
+        if (!value) {
+          maghribSunnah = 0;
+          maghribNafl = 0;
+        }
         break;
       case 'isha':
         ishaFardh = value;
+        if (!value) {
+          ishaSunnah = 0;
+          ishaNafl = 0;
+          ishaWitr = 0;
+        }
         break;
     }
   }

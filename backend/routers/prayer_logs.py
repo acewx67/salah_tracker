@@ -21,6 +21,25 @@ router = APIRouter(prefix="/logs", tags=["Prayer Logs"])
 
 def _upsert_log(db: Session, user: User, data: PrayerLogCreate) -> PrayerLog:
     """Create or update a prayer log for a given date."""
+    
+    # Enforce zeroing out secondary prayers if Fardh is false
+    if not data.fajr_fardh:
+        data.fajr_sunnah = 0
+        data.fajr_nafl = 0
+    if not data.dhuhr_fardh:
+        data.dhuhr_sunnah = 0
+        data.dhuhr_nafl = 0
+    if not data.asr_fardh:
+        data.asr_sunnah = 0
+        data.asr_nafl = 0
+    if not data.maghrib_fardh:
+        data.maghrib_sunnah = 0
+        data.maghrib_nafl = 0
+    if not data.isha_fardh:
+        data.isha_sunnah = 0
+        data.isha_nafl = 0
+        data.isha_witr = 0
+
     existing = db.query(PrayerLog).filter(
         and_(PrayerLog.user_id == user.id, PrayerLog.date == data.date)
     ).first()
