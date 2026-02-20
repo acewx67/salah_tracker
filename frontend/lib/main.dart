@@ -1,3 +1,5 @@
+import 'package:salah_tracker/screens/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salah_tracker/config/theme.dart';
@@ -12,6 +14,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Firebase
+  await Firebase.initializeApp();
+
   // Initialize Hive
   await Hive.initFlutter();
 
@@ -21,9 +26,7 @@ void main() async {
 
   runApp(
     ProviderScope(
-      overrides: [
-        localStorageProvider.overrideWithValue(localStorage),
-      ],
+      overrides: [localStorageProvider.overrideWithValue(localStorage)],
       child: const SalahTrackerApp(),
     ),
   );
@@ -38,8 +41,27 @@ class SalahTrackerApp extends StatelessWidget {
       title: 'Salah Tracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainShell(),
+      home: const AuthWrapper(),
     );
+  }
+}
+
+class AuthWrapper extends ConsumerWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+
+    if (authState.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (authState.user == null) {
+      return const LoginScreen();
+    }
+
+    return const MainShell();
   }
 }
 
@@ -58,10 +80,7 @@ class MainShell extends ConsumerWidget {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: currentIndex,
-        children: screens,
-      ),
+      body: IndexedStack(index: currentIndex, children: screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [

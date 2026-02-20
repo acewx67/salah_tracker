@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:salah_tracker/main.dart';
 
 void main() {
   testWidgets('App starts up', (WidgetTester tester) async {

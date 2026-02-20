@@ -1,4 +1,5 @@
 /// App-wide constants for prayer names, expected rakats, etc.
+library;
 
 class PrayerConstants {
   static const List<String> prayerNames = [
@@ -47,6 +48,7 @@ class PrayerConstants {
 }
 
 class ApiConstants {
-  static const String baseUrl = 'http://10.0.2.2:8000'; // Android emulator → localhost
+  static const String baseUrl =
+      'http://192.168.29.13:8000'; // Physical device IP
   static const String iosBaseUrl = 'http://localhost:8000';
 }

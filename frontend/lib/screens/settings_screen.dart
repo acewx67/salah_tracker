@@ -12,6 +12,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final localStorage = ref.read(localStorageProvider);
     final startDate = ref.watch(performanceStartDateProvider);
+    final authState = ref.watch(authProvider);
     final notificationsEnabled = localStorage.notificationsEnabled;
 
     return Scaffold(
@@ -29,8 +30,8 @@ class SettingsScreen extends ConsumerWidget {
                 backgroundColor: AppTheme.primary,
                 child: Icon(Icons.person, color: Colors.white),
               ),
-              title: Text(localStorage.userName ?? 'Guest User'),
-              subtitle: Text(localStorage.userEmail ?? 'Not signed in'),
+              title: Text(authState.user?.displayName ?? 'Guest User'),
+              subtitle: Text(authState.user?.email ?? 'Not signed in'),
             ),
           ),
 
@@ -62,7 +63,7 @@ class SettingsScreen extends ConsumerWidget {
               title: const Text('Daily Reminders'),
               subtitle: const Text('9 PM logging reminder & 5 AM missed prayer alert'),
               value: notificationsEnabled,
-              activeColor: AppTheme.primary,
+              activeThumbColor: AppTheme.primary,
               onChanged: (value) {
                 localStorage.setNotificationsEnabled(value);
                 // Trigger rebuild
@@ -116,6 +117,25 @@ class SettingsScreen extends ConsumerWidget {
               leading: Icon(Icons.info_outline, color: AppTheme.primary),
               title: Text('Salah Tracker'),
               subtitle: Text('Version 1.0.0'),
+            ),
+          ),
+
+          // ─── Logout ──────────────────────────────────────────
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ElevatedButton.icon(
+              onPressed: () => _confirmLogout(context, ref),
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade50,
+                foregroundColor: Colors.red,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ),
 
@@ -193,6 +213,30 @@ class SettingsScreen extends ConsumerWidget {
           const SnackBar(content: Text('Local data cleared')),
         );
       }
+    }
+  }
+
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout?'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await ref.read(authProvider.notifier).signOut();
     }
   }
 }

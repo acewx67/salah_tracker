@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = f"sqlite:///{os.path.join(_BASE_DIR, 'salah_tracker.db')}"
     FIREBASE_CREDENTIALS_PATH: Optional[str] = None
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8080"
+    CORS_ORIGINS: str = "*"
 
     @property
     def cors_origins_list(self) -> list[str]:
