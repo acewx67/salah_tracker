@@ -209,6 +209,13 @@ class PrayerLogNotifier extends StateNotifier<PrayerLog> {
     state = state.copyWith();
   }
 
+  void setWitr(String prayer, int value) {
+    state.setWitr(prayer, value);
+    state.computeScore();
+    _localStorage.saveLog(state);
+    state = state.copyWith();
+  }
+
   void refresh() {
     final log = _localStorage.getLog(state.date) ?? PrayerLog(date: state.date);
     state = log;

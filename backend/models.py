@@ -58,6 +58,7 @@ class PrayerLog(Base):
     isha_fardh: Mapped[bool] = mapped_column(Boolean, default=False)
     isha_sunnah: Mapped[int] = mapped_column(Integer, default=0)
     isha_nafl: Mapped[int] = mapped_column(Integer, default=0)
+    isha_witr: Mapped[int] = mapped_column(Integer, default=0)
 
     # Computed score
     daily_score: Mapped[float] = mapped_column(Float, default=0.0)

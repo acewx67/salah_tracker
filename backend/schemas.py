@@ -51,6 +51,7 @@ class PrayerLogCreate(BaseModel):
     isha_fardh: bool = False
     isha_sunnah: int = Field(default=0, ge=0)
     isha_nafl: int = Field(default=0, ge=0)
+    isha_witr: int = Field(default=0, ge=0, le=3)
 
 
 class PrayerLogUpdate(PrayerLogCreate):
@@ -81,6 +82,7 @@ class PrayerLogResponse(BaseModel):
     isha_fardh: bool
     isha_sunnah: int
     isha_nafl: int
+    isha_witr: int
 
     daily_score: float
     created_at: datetime

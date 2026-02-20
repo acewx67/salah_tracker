@@ -2,7 +2,7 @@
 
 Weighting:
   - Fardh prayers = 85% of daily score
-  - Sunnah + Nafl = 15% of daily score
+  - Sunnah + Nafl + Witr = 15% of daily score
 
 Daily Score = (fardh_completed / 5) * 85 + min((sunnah_prayed / expected_sunnah) * 15, 15)
 """
@@ -14,9 +14,10 @@ EXPECTED_SUNNAH = {
     "asr": 0,     # Optional
     "maghrib": 2,
     "isha": 4,    # 2 + 2
+    "isha_witr": 3,  # Witr — wajib, scored same as sunnah
 }
 
-TOTAL_EXPECTED_SUNNAH = sum(EXPECTED_SUNNAH.values())  # 14
+TOTAL_EXPECTED_SUNNAH = sum(EXPECTED_SUNNAH.values())  # 17
 
 FARDH_WEIGHT = 85.0
 SUNNAH_WEIGHT = 15.0
@@ -38,11 +39,12 @@ def compute_daily_score(
     isha_fardh: bool,
     isha_sunnah: int,
     isha_nafl: int,
+    isha_witr: int = 0,
 ) -> float:
     """Compute the weighted daily score (0–100).
 
     Fardh completed count drives 85% of the score.
-    Sunnah + Nafl rakats (capped) drive the remaining 15%.
+    Sunnah + Nafl + Witr rakats (capped) drive the remaining 15%.
     """
     # Count fardh completed
     fardh_completed = sum([
@@ -62,10 +64,13 @@ def compute_daily_score(
         maghrib_nafl + isha_nafl
     )
 
-    # Sunnah score: (total sunnah + nafl prayed / expected sunnah) * 15, capped at 15
+    # Witr contributes to the sunnah weight bucket
+    total_witr = isha_witr
+
+    # Sunnah score: (total sunnah + nafl + witr prayed / expected) * 15, capped at 15
     if TOTAL_EXPECTED_SUNNAH > 0:
         sunnah_score = min(
-            ((total_sunnah + total_nafl) / TOTAL_EXPECTED_SUNNAH) * SUNNAH_WEIGHT,
+            ((total_sunnah + total_nafl + total_witr) / TOTAL_EXPECTED_SUNNAH) * SUNNAH_WEIGHT,
             SUNNAH_WEIGHT
         )
     else:
@@ -95,7 +100,8 @@ def compute_score_from_log(log) -> float:
             isha_fardh=log.isha_fardh,
             isha_sunnah=log.isha_sunnah,
             isha_nafl=log.isha_nafl,
+            isha_witr=getattr(log, "isha_witr", 0),
         )
     else:
-        # Dict-like
+        # Dict-like (pass through, isha_witr defaults to 0 if missing)
         return compute_daily_score(**log)

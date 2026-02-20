@@ -30,6 +30,8 @@ class PrayerCard extends ConsumerWidget {
     final sunnahOpts = PrayerConstants.sunnahOptions[prayerKey] ?? [0, 2];
     final naflOpts = PrayerConstants.naflOptions[prayerKey] ?? [0];
     final hasNafl = PrayerConstants.showNafl(prayerKey);
+    final witrValue = log.getWitr(prayerKey);
+    final hasWitr = prayerKey == 'isha';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -144,6 +146,17 @@ class PrayerCard extends ConsumerWidget {
                 selectedValue: naflValue,
                 options: naflOpts,
                 onChanged: (val) => notifier.setNafl(prayerKey, val),
+              ),
+            ],
+
+            // ─── Witr selector (Isha only) ──────────────────────
+            if (hasWitr) ...[
+              const SizedBox(height: 12),
+              RakatSelector(
+                label: 'Witr Rakats',
+                selectedValue: witrValue,
+                options: PrayerConstants.witrOptions,
+                onChanged: (val) => notifier.setWitr(prayerKey, val),
               ),
             ],
           ],

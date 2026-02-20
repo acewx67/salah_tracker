@@ -24,9 +24,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final logs = ref.watch(calendarLogsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Calendar'),
-      ),
+      appBar: AppBar(title: const Text('Calendar')),
       body: Column(
         children: [
           // ─── Calendar ────────────────────────────────────────
@@ -49,8 +47,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
-              ref.read(calendarMonthProvider.notifier).state =
-                  DateTime(focusedDay.year, focusedDay.month, 1);
+              ref.read(calendarMonthProvider.notifier).state = DateTime(
+                focusedDay.year,
+                focusedDay.month,
+                1,
+              );
             },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
@@ -131,7 +132,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   Widget _buildDayDetail(Map<DateTime, PrayerLog> logs) {
-    final key = DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day);
+    final key = DateTime(
+      _selectedDay!.year,
+      _selectedDay!.month,
+      _selectedDay!.day,
+    );
     final log = logs[key];
 
     return Expanded(
@@ -147,10 +152,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           children: [
             Text(
               DateFormat('EEEE, d MMMM').format(_selectedDay!),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             if (log == null)
@@ -167,22 +169,52 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      _prayerRow('Fajr', log.fajrFardh, log.fajrSunnah, log.fajrNafl),
-                      _prayerRow('Dhuhr', log.dhuhrFardh, log.dhuhrSunnah, log.dhuhrNafl),
-                      _prayerRow('Asr', log.asrFardh, log.asrSunnah, log.asrNafl),
-                      _prayerRow('Maghrib', log.maghribFardh, log.maghribSunnah, log.maghribNafl),
-                      _prayerRow('Isha', log.ishaFardh, log.ishaSunnah, log.ishaNafl),
+                      _prayerRow(
+                        'Fajr',
+                        log.fajrFardh,
+                        log.fajrSunnah,
+                        log.fajrNafl,
+                      ),
+                      _prayerRow(
+                        'Dhuhr',
+                        log.dhuhrFardh,
+                        log.dhuhrSunnah,
+                        log.dhuhrNafl,
+                      ),
+                      _prayerRow(
+                        'Asr',
+                        log.asrFardh,
+                        log.asrSunnah,
+                        log.asrNafl,
+                      ),
+                      _prayerRow(
+                        'Maghrib',
+                        log.maghribFardh,
+                        log.maghribSunnah,
+                        log.maghribNafl,
+                      ),
+                      _prayerRow(
+                        'Isha',
+                        log.ishaFardh,
+                        log.ishaSunnah,
+                        log.ishaNafl,
+                        witr: log.ishaWitr,
+                      ),
                       const Divider(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Daily Score',
-                              style: TextStyle(fontWeight: FontWeight.w600)),
-                          Text('${log.dailyScore.toStringAsFixed(1)}/100',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.primary,
-                              )),
+                          const Text(
+                            'Daily Score',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            '${log.dailyScore.toStringAsFixed(1)}/100',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.primary,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -195,7 +227,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  Widget _prayerRow(String name, bool fardh, int sunnah, int nafl) {
+  Widget _prayerRow(
+    String name,
+    bool fardh,
+    int sunnah,
+    int nafl, {
+    int? witr,
+  }) {
+    final stats = witr != null
+        ? 'S:$sunnah N:$nafl W:$witr'
+        : 'S:$sunnah N:$nafl';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -208,11 +249,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           const SizedBox(width: 8),
           Expanded(child: Text(name)),
           Text(
-            'S:$sunnah N:$nafl',
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppTheme.textSecondary,
-            ),
+            stats,
+            style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
           ),
         ],
       ),

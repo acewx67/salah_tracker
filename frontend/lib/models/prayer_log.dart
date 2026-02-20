@@ -30,6 +30,7 @@ class PrayerLog {
   bool ishaFardh;
   int ishaSunnah;
   int ishaNafl;
+  int ishaWitr;
 
   double dailyScore;
   bool isSynced;
@@ -53,6 +54,7 @@ class PrayerLog {
     this.ishaFardh = false,
     this.ishaSunnah = 0,
     this.ishaNafl = 0,
+    this.ishaWitr = 0,
     this.dailyScore = 0.0,
     this.isSynced = false,
   });
@@ -61,65 +63,122 @@ class PrayerLog {
 
   bool getFardh(String prayer) {
     switch (prayer) {
-      case 'fajr': return fajrFardh;
-      case 'dhuhr': return dhuhrFardh;
-      case 'asr': return asrFardh;
-      case 'maghrib': return maghribFardh;
-      case 'isha': return ishaFardh;
-      default: return false;
+      case 'fajr':
+        return fajrFardh;
+      case 'dhuhr':
+        return dhuhrFardh;
+      case 'asr':
+        return asrFardh;
+      case 'maghrib':
+        return maghribFardh;
+      case 'isha':
+        return ishaFardh;
+      default:
+        return false;
     }
   }
 
   void setFardh(String prayer, bool value) {
     switch (prayer) {
-      case 'fajr': fajrFardh = value; break;
-      case 'dhuhr': dhuhrFardh = value; break;
-      case 'asr': asrFardh = value; break;
-      case 'maghrib': maghribFardh = value; break;
-      case 'isha': ishaFardh = value; break;
+      case 'fajr':
+        fajrFardh = value;
+        break;
+      case 'dhuhr':
+        dhuhrFardh = value;
+        break;
+      case 'asr':
+        asrFardh = value;
+        break;
+      case 'maghrib':
+        maghribFardh = value;
+        break;
+      case 'isha':
+        ishaFardh = value;
+        break;
     }
   }
 
   int getSunnah(String prayer) {
     switch (prayer) {
-      case 'fajr': return fajrSunnah;
-      case 'dhuhr': return dhuhrSunnah;
-      case 'asr': return asrSunnah;
-      case 'maghrib': return maghribSunnah;
-      case 'isha': return ishaSunnah;
-      default: return 0;
+      case 'fajr':
+        return fajrSunnah;
+      case 'dhuhr':
+        return dhuhrSunnah;
+      case 'asr':
+        return asrSunnah;
+      case 'maghrib':
+        return maghribSunnah;
+      case 'isha':
+        return ishaSunnah;
+      default:
+        return 0;
     }
   }
 
   void setSunnah(String prayer, int value) {
     switch (prayer) {
-      case 'fajr': fajrSunnah = value; break;
-      case 'dhuhr': dhuhrSunnah = value; break;
-      case 'asr': asrSunnah = value; break;
-      case 'maghrib': maghribSunnah = value; break;
-      case 'isha': ishaSunnah = value; break;
+      case 'fajr':
+        fajrSunnah = value;
+        break;
+      case 'dhuhr':
+        dhuhrSunnah = value;
+        break;
+      case 'asr':
+        asrSunnah = value;
+        break;
+      case 'maghrib':
+        maghribSunnah = value;
+        break;
+      case 'isha':
+        ishaSunnah = value;
+        break;
     }
   }
 
   int getNafl(String prayer) {
     switch (prayer) {
-      case 'fajr': return fajrNafl;
-      case 'dhuhr': return dhuhrNafl;
-      case 'asr': return asrNafl;
-      case 'maghrib': return maghribNafl;
-      case 'isha': return ishaNafl;
-      default: return 0;
+      case 'fajr':
+        return fajrNafl;
+      case 'dhuhr':
+        return dhuhrNafl;
+      case 'asr':
+        return asrNafl;
+      case 'maghrib':
+        return maghribNafl;
+      case 'isha':
+        return ishaNafl;
+      default:
+        return 0;
     }
   }
 
   void setNafl(String prayer, int value) {
     switch (prayer) {
-      case 'fajr': fajrNafl = value; break;
-      case 'dhuhr': dhuhrNafl = value; break;
-      case 'asr': asrNafl = value; break;
-      case 'maghrib': maghribNafl = value; break;
-      case 'isha': ishaNafl = value; break;
+      case 'fajr':
+        fajrNafl = value;
+        break;
+      case 'dhuhr':
+        dhuhrNafl = value;
+        break;
+      case 'asr':
+        asrNafl = value;
+        break;
+      case 'maghrib':
+        maghribNafl = value;
+        break;
+      case 'isha':
+        ishaNafl = value;
+        break;
     }
+  }
+
+  int getWitr(String prayer) {
+    if (prayer == 'isha') return ishaWitr;
+    return 0;
+  }
+
+  void setWitr(String prayer, int value) {
+    if (prayer == 'isha') ishaWitr = value;
   }
 
   // ─── Scoring ─────────────────────────────────────────────────────
@@ -135,10 +194,14 @@ class PrayerLog {
   }
 
   int get totalSunnah =>
-      fajrSunnah + dhuhrSunnah + asrSunnah + maghribSunnah + ishaSunnah;
+      fajrSunnah +
+      dhuhrSunnah +
+      asrSunnah +
+      maghribSunnah +
+      ishaSunnah +
+      ishaWitr; // witr scored same as sunnah
 
-  int get totalNafl =>
-      fajrNafl + dhuhrNafl + asrNafl + maghribNafl + ishaNafl;
+  int get totalNafl => fajrNafl + dhuhrNafl + asrNafl + maghribNafl + ishaNafl;
 
   bool get allSunnahComplete =>
       totalSunnah >= PrayerConstants.totalExpectedSunnah;
@@ -149,7 +212,8 @@ class PrayerLog {
     final expectedSunnah = PrayerConstants.totalExpectedSunnah;
     double sunnahScore = 0.0;
     if (expectedSunnah > 0) {
-      sunnahScore = (sunnahTotal / expectedSunnah) * PrayerConstants.sunnahWeight;
+      sunnahScore =
+          (sunnahTotal / expectedSunnah) * PrayerConstants.sunnahWeight;
       if (sunnahScore > PrayerConstants.sunnahWeight) {
         sunnahScore = PrayerConstants.sunnahWeight;
       }
@@ -162,7 +226,8 @@ class PrayerLog {
 
   Map<String, dynamic> toJson() {
     return {
-      'date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
+      'date':
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
       'fajr_fardh': fajrFardh,
       'fajr_sunnah': fajrSunnah,
       'fajr_nafl': fajrNafl,
@@ -178,6 +243,7 @@ class PrayerLog {
       'isha_fardh': ishaFardh,
       'isha_sunnah': ishaSunnah,
       'isha_nafl': ishaNafl,
+      'isha_witr': ishaWitr,
     };
   }
 
@@ -201,6 +267,7 @@ class PrayerLog {
       ishaFardh: json['isha_fardh'] ?? false,
       ishaSunnah: json['isha_sunnah'] ?? 0,
       ishaNafl: json['isha_nafl'] ?? 0,
+      ishaWitr: json['isha_witr'] ?? 0,
       dailyScore: (json['daily_score'] ?? 0.0).toDouble(),
       isSynced: true,
     );
@@ -236,6 +303,7 @@ class PrayerLog {
       ishaFardh: map['isha_fardh'] ?? false,
       ishaSunnah: map['isha_sunnah'] ?? 0,
       ishaNafl: map['isha_nafl'] ?? 0,
+      ishaWitr: map['isha_witr'] ?? 0,
       dailyScore: (map['daily_score'] ?? 0.0).toDouble(),
       isSynced: map['is_synced'] ?? false,
     );
@@ -261,6 +329,7 @@ class PrayerLog {
       ishaFardh: ishaFardh,
       ishaSunnah: ishaSunnah,
       ishaNafl: ishaNafl,
+      ishaWitr: ishaWitr,
       dailyScore: dailyScore,
       isSynced: isSynced,
     );

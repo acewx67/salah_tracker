@@ -76,6 +76,9 @@ class PrayerConstants {
     return opts.length > 1;
   }
 
+  /// Witr options — only [0] or [3] (Isha only, wajib in Hanafi school).
+  static const List<int> witrOptions = [0, 3];
+
   /// Scoring weights
   static const double fardhWeight = 85.0;
   static const double sunnahWeight = 15.0;
