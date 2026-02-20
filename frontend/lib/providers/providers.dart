@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salah_tracker/models/prayer_log.dart';
 import 'package:salah_tracker/services/local_storage_service.dart';
@@ -175,50 +176,80 @@ final prayerLogProvider = StateNotifierProvider<PrayerLogNotifier, PrayerLog>((
   ref,
 ) {
   final localStorage = ref.watch(localStorageProvider);
+  final apiService = ref.watch(apiServiceProvider);
   final selectedDate = ref.watch(selectedDateProvider);
   // Rebuild when user changes (immediate) or when sync completes (data update)
   ref.watch(authProvider.select((s) => s.user?.id));
   ref.watch(authProvider.select((s) => s.lastSyncAt));
-  return PrayerLogNotifier(localStorage, selectedDate);
+  return PrayerLogNotifier(localStorage, apiService, selectedDate);
 });
 
 class PrayerLogNotifier extends StateNotifier<PrayerLog> {
   final LocalStorageService _localStorage;
+  final ApiService _apiService;
+  Timer? _debounceTimer;
 
-  PrayerLogNotifier(this._localStorage, DateTime date)
+  PrayerLogNotifier(this._localStorage, this._apiService, DateTime date)
     : super(_localStorage.getLog(date) ?? PrayerLog(date: date));
+
+  void _saveAndSync() {
+    state.computeScore();
+    state.isSynced = false;
+    _localStorage.saveLog(state);
+    state = state.copyWith();
+
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 1000), () async {
+      try {
+        final unsyncedInfo = _localStorage.getUnsyncedLogs();
+        if (unsyncedInfo.isEmpty) return;
+
+        // Sync any unsynced local logs including the current one
+        final synced = await _apiService.batchSync(unsyncedInfo);
+        for (final log in synced) {
+          await _localStorage.markSynced(log.date);
+        }
+
+        // Only trigger UI update if the current date was just synced
+        if (mounted && synced.any((l) => l.date == state.date)) {
+          final updatedLog = _localStorage.getLog(state.date);
+          if (updatedLog != null) state = updatedLog;
+        }
+      } catch (e) {
+        print("Debounce sync failed: $e");
+      }
+    });
+  }
 
   void toggleFardh(String prayer) {
     state.setFardh(prayer, !state.getFardh(prayer));
-    state.computeScore();
-    _localStorage.saveLog(state);
-    state = state.copyWith();
+    _saveAndSync();
   }
 
   void setSunnah(String prayer, int value) {
     state.setSunnah(prayer, value);
-    state.computeScore();
-    _localStorage.saveLog(state);
-    state = state.copyWith();
+    _saveAndSync();
   }
 
   void setNafl(String prayer, int value) {
     state.setNafl(prayer, value);
-    state.computeScore();
-    _localStorage.saveLog(state);
-    state = state.copyWith();
+    _saveAndSync();
   }
 
   void setWitr(String prayer, int value) {
     state.setWitr(prayer, value);
-    state.computeScore();
-    _localStorage.saveLog(state);
-    state = state.copyWith();
+    _saveAndSync();
   }
 
   void refresh() {
     final log = _localStorage.getLog(state.date) ?? PrayerLog(date: state.date);
     state = log;
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 }
 
