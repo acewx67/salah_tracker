@@ -132,9 +132,39 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              DateFormat('EEEE, d MMMM').format(_selectedDay!),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  DateFormat('EEEE, d MMMM').format(_selectedDay!),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    // 1. Update the selected date provider to the day we want to edit/view
+                    ref.read(selectedDateProvider.notifier).state = DateTime(
+                      _selectedDay!.year,
+                      _selectedDay!.month,
+                      _selectedDay!.day,
+                    );
+                    // 2. Switch to the Today tab (index 0)
+                    ref.read(bottomNavIndexProvider.notifier).state = 0;
+                  },
+                  icon: Icon(log == null ? Icons.add : Icons.edit, size: 16),
+                  label: Text(log == null ? 'Log Prayers' : 'Edit'),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             if (log == null)

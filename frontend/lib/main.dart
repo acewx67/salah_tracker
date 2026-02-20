@@ -2,6 +2,7 @@ import 'package:salah_tracker/screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:salah_tracker/config/theme.dart';
 import 'package:salah_tracker/providers/providers.dart';
 import 'package:salah_tracker/screens/today_screen.dart';
@@ -71,6 +72,16 @@ class MainShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(bottomNavIndexProvider);
+    final selectedDate = ref.watch(selectedDateProvider);
+
+    final now = DateTime.now();
+    final isToday =
+        selectedDate.year == now.year &&
+        selectedDate.month == now.month &&
+        selectedDate.day == now.day;
+    final firstTabLabel = isToday
+        ? 'Today'
+        : DateFormat('d MMM').format(selectedDate);
 
     const screens = [
       TodayScreen(),
@@ -96,23 +107,23 @@ class MainShell extends ConsumerWidget {
           onTap: (index) {
             ref.read(bottomNavIndexProvider.notifier).state = index;
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.today_outlined),
-              activeIcon: Icon(Icons.today),
-              label: 'Today',
+              icon: const Icon(Icons.today_outlined),
+              activeIcon: const Icon(Icons.today),
+              label: firstTabLabel,
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.calendar_month_outlined),
               activeIcon: Icon(Icons.calendar_month),
               label: 'Calendar',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.speed_outlined),
               activeIcon: Icon(Icons.speed),
               label: 'Performance',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
               activeIcon: Icon(Icons.settings),
               label: 'Settings',
