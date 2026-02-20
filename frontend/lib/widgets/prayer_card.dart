@@ -136,6 +136,7 @@ class PrayerCard extends ConsumerWidget {
               selectedValue: sunnahValue,
               options: sunnahOpts,
               onChanged: (val) => notifier.setSunnah(prayerKey, val),
+              enabled: isFardhDone,
             ),
 
             // ─── Nafl selector (hidden for Fajr & Asr) ─────────
@@ -146,6 +147,7 @@ class PrayerCard extends ConsumerWidget {
                 selectedValue: naflValue,
                 options: naflOpts,
                 onChanged: (val) => notifier.setNafl(prayerKey, val),
+                enabled: isFardhDone,
               ),
             ],
 
@@ -157,6 +159,7 @@ class PrayerCard extends ConsumerWidget {
                 selectedValue: witrValue,
                 options: PrayerConstants.witrOptions,
                 onChanged: (val) => notifier.setWitr(prayerKey, val),
+                enabled: isFardhDone,
               ),
             ],
           ],
