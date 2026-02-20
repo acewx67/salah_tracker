@@ -26,6 +26,11 @@ class PrayerCard extends ConsumerWidget {
     final naflValue = log.getNafl(prayerKey);
     final fardhRakats = PrayerConstants.fardhRakats[prayerKey] ?? 0;
 
+    // Per-prayer option lists
+    final sunnahOpts = PrayerConstants.sunnahOptions[prayerKey] ?? [0, 2];
+    final naflOpts = PrayerConstants.naflOptions[prayerKey] ?? [0];
+    final hasNafl = PrayerConstants.showNafl(prayerKey);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Padding(
@@ -46,7 +51,9 @@ class PrayerCard extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    isFardhDone ? Icons.check_circle : Icons.radio_button_unchecked,
+                    isFardhDone
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
                     color: isFardhDone ? AppTheme.primary : Colors.grey,
                     size: 24,
                   ),
@@ -109,7 +116,9 @@ class PrayerCard extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: isFardhDone ? Colors.white : Colors.grey.shade700,
+                        color: isFardhDone
+                            ? Colors.white
+                            : Colors.grey.shade700,
                       ),
                     ),
                   ],
@@ -123,17 +132,20 @@ class PrayerCard extends ConsumerWidget {
             RakatSelector(
               label: 'Sunnah Rakats',
               selectedValue: sunnahValue,
+              options: sunnahOpts,
               onChanged: (val) => notifier.setSunnah(prayerKey, val),
             ),
 
-            const SizedBox(height: 12),
-
-            // ─── Nafl selector ─────────────────────────────────
-            RakatSelector(
-              label: 'Nafl Rakats',
-              selectedValue: naflValue,
-              onChanged: (val) => notifier.setNafl(prayerKey, val),
-            ),
+            // ─── Nafl selector (hidden for Fajr & Asr) ─────────
+            if (hasNafl) ...[
+              const SizedBox(height: 12),
+              RakatSelector(
+                label: 'Nafl Rakats',
+                selectedValue: naflValue,
+                options: naflOpts,
+                onChanged: (val) => notifier.setNafl(prayerKey, val),
+              ),
+            ],
           ],
         ),
       ),
