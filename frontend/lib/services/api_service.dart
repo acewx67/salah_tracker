@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:salah_tracker/models/prayer_log.dart';
 import 'package:salah_tracker/models/user.dart';
 
@@ -9,7 +10,7 @@ class ApiService {
   String? _authToken;
 
   ApiService({String? baseUrl})
-    : baseUrl = baseUrl ?? 'http://192.168.29.13:8000' {
+    : baseUrl = baseUrl ?? dotenv.env['BACKEND_URL'] ?? 'http://10.0.2.2:8000' {
     print('ApiService initialized with baseUrl: ${this.baseUrl}');
   }
 

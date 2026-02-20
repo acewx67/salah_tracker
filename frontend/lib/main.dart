@@ -11,9 +11,13 @@ import 'package:salah_tracker/screens/performance_screen.dart';
 import 'package:salah_tracker/screens/settings_screen.dart';
 import 'package:salah_tracker/services/local_storage_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
 
   // Initialize Firebase
   await Firebase.initializeApp();
