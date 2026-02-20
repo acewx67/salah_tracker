@@ -77,30 +77,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ),
             ),
             calendarBuilders: CalendarBuilders(
-              defaultBuilder: (context, day, focusedDay) {
-                final key = DateTime(day.year, day.month, day.day);
-                final log = logs[key];
-                final color = _getDayColor(log);
-
-                return Container(
-                  margin: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${day.day}',
-                      style: TextStyle(
-                        color: color == AppTheme.calendarEmpty
-                            ? AppTheme.textPrimary
-                            : Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                );
-              },
+              defaultBuilder: (context, day, focusedDay) =>
+                  _buildCalendarDay(day, logs),
+              selectedBuilder: (context, day, focusedDay) =>
+                  _buildCalendarDay(day, logs, isSelected: true),
+              todayBuilder: (context, day, focusedDay) =>
+                  _buildCalendarDay(day, logs, isToday: true),
             ),
           ),
 
@@ -269,6 +251,46 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         const SizedBox(width: 4),
         Text(label, style: const TextStyle(fontSize: 12)),
       ],
+    );
+  }
+
+  Widget _buildCalendarDay(
+    DateTime day,
+    Map<DateTime, PrayerLog> logs, {
+    bool isSelected = false,
+    bool isToday = false,
+  }) {
+    final key = DateTime(day.year, day.month, day.day);
+    final log = logs[key];
+    final color = _getDayColor(log);
+
+    BoxBorder? border;
+    if (isSelected) {
+      border = Border.all(color: Colors.black87, width: 2);
+    } else if (isToday) {
+      border = Border.all(color: AppTheme.primary, width: 2);
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: border,
+      ),
+      child: Center(
+        child: Text(
+          '${day.day}',
+          style: TextStyle(
+            color: color == AppTheme.calendarEmpty && !isSelected
+                ? AppTheme.textPrimary
+                : Colors.white,
+            fontWeight: isSelected || isToday
+                ? FontWeight.w700
+                : FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 

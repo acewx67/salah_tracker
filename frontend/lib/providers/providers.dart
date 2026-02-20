@@ -266,6 +266,9 @@ final calendarLogsProvider = Provider<Map<DateTime, PrayerLog>>((ref) {
   // Rebuild when user changes (immediate) or when sync completes (data update)
   ref.watch(authProvider.select((s) => s.user?.id));
   ref.watch(authProvider.select((s) => s.lastSyncAt));
+  // Rebuild when the currently selected log changes locally
+  ref.watch(prayerLogProvider);
+
   final start = DateTime(month.year, month.month, 1);
   final end = DateTime(month.year, month.month + 1, 0);
   final logs = localStorage.getLogsRange(start, end);
@@ -289,6 +292,11 @@ final performanceScoreProvider = Provider<double>((ref) {
   final localStorage = ref.watch(localStorageProvider);
   final startDate = ref.watch(performanceStartDateProvider);
   if (startDate == null) return 0.0;
+
+  // Rebuild when user changes, sync completes, or current log changes locally
+  ref.watch(authProvider.select((s) => s.user?.id));
+  ref.watch(authProvider.select((s) => s.lastSyncAt));
+  ref.watch(prayerLogProvider);
 
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
