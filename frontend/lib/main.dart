@@ -13,6 +13,8 @@ import 'package:salah_tracker/services/local_storage_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'package:salah_tracker/services/home_screen_widget.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -28,6 +30,9 @@ void main() async {
   // Initialize local storage
   final localStorage = LocalStorageService();
   await localStorage.init();
+
+  // Push existing local data to home screen widget
+  HomeScreenWidgetService.updateWidget(localStorage);
 
   runApp(
     ProviderScope(

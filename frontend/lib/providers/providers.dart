@@ -4,6 +4,7 @@ import 'package:salah_tracker/models/prayer_log.dart';
 import 'package:salah_tracker/services/local_storage_service.dart';
 import 'package:salah_tracker/services/api_service.dart';
 import 'package:salah_tracker/services/auth_service.dart';
+import 'package:salah_tracker/services/home_screen_widget.dart';
 import 'package:salah_tracker/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
@@ -92,9 +93,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
           _pullRemoteLogs()
               .then((_) {
                 state = state.copyWith(lastSyncAt: DateTime.now());
+                // Push latest heatmap data to home screen widget
+                HomeScreenWidgetService.updateWidget(_localStorage);
               })
               .catchError((Object e) {
                 print('Auto-pull error: $e');
+                // Still push local data to widget even if pull fails
+                HomeScreenWidgetService.updateWidget(_localStorage);
               });
         } catch (e) {
           print('Error loading user profile: $e');
@@ -158,6 +163,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       // Trigger UI rebuild in all watching providers
       state = state.copyWith(lastSyncAt: DateTime.now());
+
+      // Update home screen widget with latest heatmap data
+      HomeScreenWidgetService.updateWidget(_localStorage);
     } catch (e) {
       print('Sync error: $e');
       rethrow;
@@ -197,6 +205,9 @@ class PrayerLogNotifier extends StateNotifier<PrayerLog> {
     state.isSynced = false;
     _localStorage.saveLog(state);
     state = state.copyWith();
+
+    // Update home screen widget with latest heatmap data
+    HomeScreenWidgetService.updateWidget(_localStorage);
 
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 1000), () async {
