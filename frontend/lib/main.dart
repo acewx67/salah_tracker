@@ -14,6 +14,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:salah_tracker/services/home_screen_widget.dart';
+import 'package:salah_tracker/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,16 @@ void main() async {
   // Initialize local storage
   final localStorage = LocalStorageService();
   await localStorage.init();
+
+  // Initialize notifications
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.requestPermission();
+
+  // Schedule reminders if enabled
+  if (localStorage.notificationsEnabled) {
+    await notificationService.scheduleAll();
+  }
 
   // Push existing local data to home screen widget
   HomeScreenWidgetService.updateWidget(localStorage);

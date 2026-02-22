@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:salah_tracker/config/theme.dart';
 import 'package:salah_tracker/providers/providers.dart';
+import 'package:salah_tracker/services/notification_service.dart';
 
 /// Settings screen — performance start date, notifications, logout.
 class SettingsScreen extends ConsumerWidget {
@@ -70,8 +71,15 @@ class SettingsScreen extends ConsumerWidget {
               ),
               value: notificationsEnabled,
               activeThumbColor: AppTheme.primary,
-              onChanged: (value) {
+              onChanged: (value) async {
                 localStorage.setNotificationsEnabled(value);
+                final notifService = NotificationService();
+                if (value) {
+                  await notifService.requestPermission();
+                  await notifService.scheduleAll();
+                } else {
+                  await notifService.cancelAll();
+                }
                 // Trigger rebuild
                 ref.invalidate(localStorageProvider);
               },
