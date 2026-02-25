@@ -10,9 +10,7 @@ class ApiService {
   String? _authToken;
 
   ApiService({String? baseUrl})
-    : baseUrl = baseUrl ?? dotenv.env['BACKEND_URL'] ?? 'http://10.0.2.2:8000' {
-    print('ApiService initialized with baseUrl: ${this.baseUrl}');
-  }
+    : baseUrl = baseUrl ?? dotenv.env['BACKEND_URL'] ?? 'http://10.0.2.2:8000';
 
   void setAuthToken(String token) {
     _authToken = token;

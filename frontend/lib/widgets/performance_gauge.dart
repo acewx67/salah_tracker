@@ -7,11 +7,7 @@ class PerformanceGauge extends StatelessWidget {
   final double score;
   final double size;
 
-  const PerformanceGauge({
-    super.key,
-    required this.score,
-    this.size = 250,
-  });
+  const PerformanceGauge({super.key, required this.score, this.size = 250});
 
   Color _getColor() {
     if (score >= 80) return AppTheme.gaugeGreen;
@@ -58,10 +54,7 @@ class PerformanceGauge extends StatelessWidget {
                 color: color,
                 cornerStyle: CornerStyle.bothCurve,
                 gradient: SweepGradient(
-                  colors: [
-                    color.withOpacity(0.6),
-                    color,
-                  ],
+                  colors: [color.withValues(alpha: 0.6), color],
                 ),
               ),
             ],

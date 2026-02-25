@@ -48,7 +48,7 @@ class PrayerCard extends ConsumerWidget {
                   height: 40,
                   decoration: BoxDecoration(
                     color: isFardhDone
-                        ? AppTheme.primary.withOpacity(0.1)
+                        ? AppTheme.primary.withValues(alpha: 0.1)
                         : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -97,7 +97,7 @@ class PrayerCard extends ConsumerWidget {
                   boxShadow: isFardhDone
                       ? [
                           BoxShadow(
-                            color: AppTheme.primary.withOpacity(0.3),
+                            color: AppTheme.primary.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

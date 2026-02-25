@@ -81,7 +81,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
           // If a different account signed in, clear local data first
           final storedUserId = _localStorage.userId;
           if (storedUserId != null && storedUserId != firebaseUser.uid) {
-            print('Different user detected — clearing local data');
             await _localStorage.clearAll();
           }
           await _localStorage.setUserId(firebaseUser.uid);
@@ -97,12 +96,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
                 HomeScreenWidgetService.updateWidget(_localStorage);
               })
               .catchError((Object e) {
-                print('Auto-pull error: $e');
                 // Still push local data to widget even if pull fails
                 HomeScreenWidgetService.updateWidget(_localStorage);
               });
         } catch (e) {
-          print('Error loading user profile: $e');
           state = AuthState(user: null, token: null, isLoading: false);
         }
       }
@@ -130,20 +127,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _pullRemoteLogs() async {
     final now = DateTime.now();
     final oneYearAgo = DateTime(now.year - 1, now.month, now.day);
-    print('[SYNC] Pulling remote logs from $oneYearAgo to $now');
     try {
       final remoteLogs = await _apiService.getLogsRange(oneYearAgo, now);
-      print('[SYNC] Got ${remoteLogs.length} remote logs');
       for (final log in remoteLogs) {
         final existing = _localStorage.getLog(log.date);
         if (existing == null || existing.isSynced) {
           await _localStorage.saveLog(log);
-          print('[SYNC] Saved log for ${log.date}');
         }
       }
-      print('[SYNC] Pull complete');
-    } catch (e, st) {
-      print('[SYNC] Pull failed: $e\n$st');
+    } catch (e) {
+      // Pull failed
     }
   }
 
@@ -167,7 +160,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Update home screen widget with latest heatmap data
       HomeScreenWidgetService.updateWidget(_localStorage);
     } catch (e) {
-      print('Sync error: $e');
       rethrow;
     }
   }
@@ -227,7 +219,7 @@ class PrayerLogNotifier extends StateNotifier<PrayerLog> {
           if (updatedLog != null) state = updatedLog;
         }
       } catch (e) {
-        print("Debounce sync failed: $e");
+        // Debounce sync failed
       }
     });
   }

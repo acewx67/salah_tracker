@@ -55,8 +55,11 @@ class TodayScreen extends ConsumerWidget {
                 TextButton.icon(
                   onPressed: () {
                     final now = DateTime.now();
-                    ref.read(selectedDateProvider.notifier).state =
-                        DateTime(now.year, now.month, now.day);
+                    ref.read(selectedDateProvider.notifier).state = DateTime(
+                      now.year,
+                      now.month,
+                      now.day,
+                    );
                   },
                   icon: const Icon(Icons.today, size: 18),
                   label: const Text('Today'),
@@ -73,14 +76,16 @@ class TodayScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.primary.withOpacity(0.1),
-                    AppTheme.primaryLight.withOpacity(0.05),
+                    AppTheme.primary.withValues(alpha: 0.1),
+                    AppTheme.primaryLight.withValues(alpha: 0.05),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+                border: Border.all(
+                  color: AppTheme.primary.withValues(alpha: 0.2),
+                ),
               ),
               child: Row(
                 children: [
@@ -88,7 +93,7 @@ class TodayScreen extends ConsumerWidget {
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.15),
+                      color: AppTheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
@@ -133,15 +138,12 @@ class TodayScreen extends ConsumerWidget {
 
           // ─── Prayer Cards ────────────────────────────────────
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                return PrayerCard(
-                  prayerKey: PrayerConstants.prayerNames[index],
-                  prayerName: PrayerConstants.prayerDisplayNames[index],
-                );
-              },
-              childCount: PrayerConstants.prayerNames.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              return PrayerCard(
+                prayerKey: PrayerConstants.prayerNames[index],
+                prayerName: PrayerConstants.prayerDisplayNames[index],
+              );
+            }, childCount: PrayerConstants.prayerNames.length),
           ),
 
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
