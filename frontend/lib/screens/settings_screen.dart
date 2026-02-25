@@ -60,29 +60,33 @@ class SettingsScreen extends ConsumerWidget {
           // ─── Notifications Section ───────────────────────────
           _sectionHeader('Notifications'),
           Card(
-            child: SwitchListTile(
-              secondary: const Icon(
-                Icons.notifications_outlined,
-                color: AppTheme.primary,
-              ),
-              title: const Text('Daily Reminders'),
-              subtitle: const Text(
-                '9 PM logging reminder & 5 AM missed prayer alert',
-              ),
-              value: notificationsEnabled,
-              activeThumbColor: AppTheme.primary,
-              onChanged: (value) async {
-                localStorage.setNotificationsEnabled(value);
-                final notifService = NotificationService();
-                if (value) {
-                  await notifService.requestPermission();
-                  await notifService.scheduleAll();
-                } else {
-                  await notifService.cancelAll();
-                }
-                // Trigger rebuild
-                ref.invalidate(localStorageProvider);
-              },
+            child: Column(
+              children: [
+                SwitchListTile(
+                  secondary: const Icon(
+                    Icons.notifications_outlined,
+                    color: AppTheme.primary,
+                  ),
+                  title: const Text('Daily Reminders'),
+                  subtitle: const Text(
+                    '9 PM logging reminder & 5 AM missed prayer alert',
+                  ),
+                  value: notificationsEnabled,
+                  activeThumbColor: AppTheme.primary,
+                  onChanged: (value) async {
+                    localStorage.setNotificationsEnabled(value);
+                    final notifService = NotificationService();
+                    if (value) {
+                      await notifService.requestPermission();
+                      await notifService.scheduleAll();
+                    } else {
+                      await notifService.cancelAll();
+                    }
+                    // Trigger rebuild
+                    ref.invalidate(localStorageProvider);
+                  },
+                ),
+              ],
             ),
           ),
 

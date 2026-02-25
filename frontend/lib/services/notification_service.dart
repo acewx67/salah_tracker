@@ -48,6 +48,13 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(androidChannel);
+
+    // Check if we can schedule exact notifications
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.canScheduleExactNotifications();
   }
 
   /// Request notification permission (required on Android 13+).
@@ -57,8 +64,12 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >();
     if (android != null) {
-      final granted = await android.requestNotificationsPermission();
-      return granted ?? false;
+      final notificationGranted = await android
+          .requestNotificationsPermission();
+
+      final exactGranted = await android.requestExactAlarmsPermission();
+
+      return (notificationGranted ?? false) && (exactGranted ?? false);
     }
     return true;
   }
@@ -72,17 +83,17 @@ class NotificationService {
       id: _eveningReminderId,
       hour: 21,
       minute: 0,
-      title: '🕌 Log Your Prayers',
-      body: "Don't forget to log today's prayers before the day ends!",
+      title: '🕌 Log Your Salah',
+      body: "Don't forget to log today's Salah before the day ends!",
     );
 
-    // 5 AM — "Did you miss any prayers?" alert
+    // 5 AM — "Did you log all your prayers yesterday?" alert
     await _scheduleDailyNotification(
       id: _morningReminderId,
       hour: 5,
       minute: 0,
-      title: '🌅 Prayer Check',
-      body: 'Did you log all your prayers yesterday? Open the app to check.',
+      title: '🌅 Salah Log Check',
+      body: 'Did you log all your Salah yesterday? Open the app to check.',
     );
   }
 
@@ -100,7 +111,6 @@ class NotificationService {
     required String body,
   }) async {
     final scheduledTime = _nextInstanceOfTime(hour, minute);
-
     await _plugin.zonedSchedule(
       id,
       title,
@@ -116,7 +126,7 @@ class NotificationService {
           icon: '@mipmap/ic_launcher',
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
