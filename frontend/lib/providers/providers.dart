@@ -200,14 +200,14 @@ class PrayerLogNotifier extends StateNotifier<PrayerLog> {
   PrayerLogNotifier(this._localStorage, this._apiService, DateTime date)
     : super(_localStorage.getLog(date) ?? PrayerLog(date: date));
 
-  void _saveAndSync() {
+  Future<void> _saveAndSync() async {
     state.computeScore();
     state.isSynced = false;
-    _localStorage.saveLog(state);
+    await _localStorage.saveLog(state);
     state = state.copyWith();
 
     // Update home screen widget with latest heatmap data
-    HomeScreenWidgetService.updateWidget(_localStorage);
+    await HomeScreenWidgetService.updateWidget(_localStorage);
 
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 1000), () async {
