@@ -41,11 +41,3 @@ firebase_service_account.json
 # OS
 .DS_Store
 Thumbs.db
-
-# Generated Assets (Branding)
-frontend/android/app/src/main/res/mipmap-*/launcher_icon.png
-frontend/ios/Runner/Assets.xcassets/AppIcon.appiconset/*.png
-frontend/ios/Runner/Assets.xcassets/LaunchBackground.imageset/
-frontend/ios/Runner/Assets.xcassets/LaunchImage.imageset/
-frontend/android/app/src/main/res/values-v31/
-frontend/android/app/src/main/res/values-night-v31/
