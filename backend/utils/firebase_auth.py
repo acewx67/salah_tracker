@@ -31,14 +31,22 @@ try:
         cred_path = os.path.join(backend_dir, cred_path)
 
     if cred_path and os.path.exists(cred_path):
+        # File exists — load credentials from the file path
         cred = credentials.Certificate(cred_path)
         firebase_admin.initialize_app(cred)
         _firebase_initialized = True
-        logger.info(f"Firebase Admin SDK initialized successfully using: {cred_path}")
+        logger.info(f"Firebase Admin SDK initialized successfully using file: {cred_path}")
+    elif settings.FIREBASE_CREDENTIALS_PATH:
+        # File not found — treat the env var value itself as the JSON content
+        import json
+        cred_dict = json.loads(settings.FIREBASE_CREDENTIALS_PATH)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+        _firebase_initialized = True
+        logger.info("Firebase Admin SDK initialized successfully using inline credentials.")
     else:
         logger.warning(
-            f"Firebase credentials not found at {cred_path}. Running in MOCK auth mode. "
-            "Set FIREBASE_CREDENTIALS_PATH in .env to enable real auth."
+            "FIREBASE_CREDENTIALS_PATH is not set. Running in MOCK auth mode."
         )
 except Exception as e:
     logger.warning(f"Firebase initialization failed: {e}. Running in MOCK auth mode.")
