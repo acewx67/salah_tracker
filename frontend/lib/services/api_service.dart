@@ -120,6 +120,18 @@ class ApiService {
     throw Exception('Batch sync failed: ${response.body}');
   }
 
+  // ─── Account Management ────────────────────────────────────────────
+
+  Future<void> deleteAccount() async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/auth/account'),
+      headers: _headers,
+    );
+    if (response.statusCode != 204) {
+      throw Exception('Delete account failed: ${response.body}');
+    }
+  }
+
   // ─── Performance ──────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getPerformance(

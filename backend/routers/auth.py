@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User
-from schemas import GoogleLoginRequest, UserResponse, UpdatePerformanceStartDate
+from schemas import GoogleLoginRequest, UserResponse, UpdatePerformanceStartDate, DeleteAccountRequest
 from utils.firebase_auth import verify_firebase_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -49,3 +49,17 @@ async def update_performance_start_date(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.delete("/account", status_code=204)
+async def delete_account(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Permanently delete the current user's account and all associated data.
+
+    This endpoint is required for Google Play Store compliance.
+    All prayer logs are cascade-deleted automatically.
+    """
+    db.delete(current_user)
+    db.commit()

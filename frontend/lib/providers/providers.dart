@@ -124,6 +124,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _authService.signOut();
   }
 
+  /// Permanently delete the user's account and all associated data.
+  /// Calls the backend to delete server-side data, clears local storage,
+  /// then signs out of Firebase (which triggers redirect to login screen).
+  Future<void> deleteAccount() async {
+    await _apiService.deleteAccount();
+    await _localStorage.clearAll();
+    await _authService.signOut();
+  }
+
   Future<void> _pullRemoteLogs() async {
     final now = DateTime.now();
     final oneYearAgo = DateTime(now.year - 1, now.month, now.day);

@@ -175,3 +175,40 @@ class TestPerformanceEndpoints:
         response = client.get("/performance/?start=2026-01-01&end=2026-01-31")
         assert response.status_code == 200
         assert response.json()["average_score"] == 0.0
+
+
+class TestDeleteAccount:
+    def _login(self, client):
+        client.post("/auth/google-login", json={"id_token": "mock"})
+
+    def test_delete_account(self, client):
+        """Deleting account returns 204 and removes the user."""
+        self._login(client)
+        response = client.delete("/auth/account")
+        assert response.status_code == 204
+
+    def test_delete_account_cascades_logs(self, client):
+        """Deleting account also removes all prayer logs."""
+        self._login(client)
+        # Create a prayer log first
+        client.post("/logs/", json={
+            "date": "2026-02-19",
+            "fajr_fardh": True, "fajr_sunnah": 2, "fajr_nafl": 0,
+            "dhuhr_fardh": True, "dhuhr_sunnah": 0, "dhuhr_nafl": 0,
+            "asr_fardh": False, "asr_sunnah": 0, "asr_nafl": 0,
+            "maghrib_fardh": False, "maghrib_sunnah": 0, "maghrib_nafl": 0,
+            "isha_fardh": False, "isha_sunnah": 0, "isha_nafl": 0,
+        })
+        # Verify log exists
+        response = client.get("/logs/2026-02-19")
+        assert response.status_code == 200
+
+        # Delete account
+        response = client.delete("/auth/account")
+        assert response.status_code == 204
+
+        # After deletion, mock mode will auto-create a new user on next request.
+        # The old prayer log should be gone (new user has no logs).
+        response = client.get("/logs/2026-02-19")
+        assert response.status_code == 404
+

@@ -27,6 +27,10 @@ class UpdatePerformanceStartDate(BaseModel):
     performance_start_date: date
 
 
+class DeleteAccountRequest(BaseModel):
+    confirmation_code: str
+
+
 # ─── Prayer Logs ────────────────────────────────────────────────────────
 
 class PrayerLogCreate(BaseModel):

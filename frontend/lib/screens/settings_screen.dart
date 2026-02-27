@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:salah_tracker/config/theme.dart';
 import 'package:salah_tracker/providers/providers.dart';
+import 'package:salah_tracker/screens/delete_account_screen.dart';
 import 'package:salah_tracker/services/notification_service.dart';
 
 /// Settings screen — performance start date, notifications, logout.
@@ -24,13 +25,38 @@ class SettingsScreen extends ConsumerWidget {
           // ─── Account Section ─────────────────────────────────
           _sectionHeader('Account'),
           Card(
-            child: ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: AppTheme.primary,
-                child: Icon(Icons.person, color: Colors.white),
-              ),
-              title: Text(authState.user?.displayName ?? 'Guest User'),
-              subtitle: Text(authState.user?.email ?? 'Not signed in'),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: AppTheme.primary,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                  title: Text(authState.user?.displayName ?? 'Guest User'),
+                  subtitle: Text(authState.user?.email ?? 'Not signed in'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Icon(
+                    Icons.delete_forever,
+                    color: Colors.red.shade400,
+                  ),
+                  title: const Text('Delete Account'),
+                  subtitle: const Text(
+                    'Permanently delete your account and all data',
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Colors.red.shade300,
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const DeleteAccountScreen(),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
