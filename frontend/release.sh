@@ -5,16 +5,15 @@ set -e
 # 1. Validate Arguments
 # ----------------------------
 
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+if [ -z "$1" ] || [ -z "$2" ]; then
   echo "❌ ERROR: Missing arguments."
-  echo "Usage: ./release.sh <version_name> <build_number> \"commit message\""
-  echo "Example: ./release.sh 1.2.0 7 \"Add mosque search\""
+  echo "Usage: ./release.sh <version_name> \"commit message\""
+  echo "Example: ./release.sh 1.2.0 \"Add mosque search\""
   exit 1
 fi
 
 VERSION_NAME=$1
-BUILD_NUMBER=$2
-COMMIT_MESSAGE=$3
+COMMIT_MESSAGE=$2
 
 # ----------------------------
 # 2. Validate Version Name Format (x.y.z)
@@ -27,16 +26,7 @@ if ! [[ "$VERSION_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 # ----------------------------
-# 3. Validate Build Number
-# ----------------------------
-
-if ! [[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
-  echo "❌ ERROR: Build number must be an integer."
-  exit 1
-fi
-
-# ----------------------------
-# 4. Block If Uncommitted Changes
+# 3. Block If Uncommitted Changes
 # ----------------------------
 
 if ! git diff-index --quiet HEAD --; then
@@ -46,19 +36,40 @@ if ! git diff-index --quiet HEAD --; then
 fi
 
 # ----------------------------
+# 4. Read Current Build Number
+# ----------------------------
+
+current=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+
+if [[ "$current" != *"+"* ]]; then
+  echo "❌ ERROR: pubspec.yaml must contain build number (x.y.z+build)"
+  exit 1
+fi
+
+current_build=$(echo $current | cut -d'+' -f2)
+
+if ! [[ "$current_build" =~ ^[0-9]+$ ]]; then
+  echo "❌ ERROR: Existing build number is invalid."
+  exit 1
+fi
+
+# Auto increment
+NEW_BUILD=$((current_build + 1))
+
+# ----------------------------
 # 5. Update pubspec.yaml
 # ----------------------------
 
-sed -i "s/^version:.*/version: ${VERSION_NAME}+${BUILD_NUMBER}/" pubspec.yaml
+sed -i "s/^version:.*/version: ${VERSION_NAME}+${NEW_BUILD}/" pubspec.yaml
 
-echo "✅ Updated version to ${VERSION_NAME}+${BUILD_NUMBER}"
+echo "✅ Updated version to ${VERSION_NAME}+${NEW_BUILD}"
 
 # ----------------------------
 # 6. Commit Version Bump
 # ----------------------------
 
 git add pubspec.yaml
-git commit -m "Release ${VERSION_NAME}+${BUILD_NUMBER} - ${COMMIT_MESSAGE}"
+git commit -m "Release ${VERSION_NAME}+${NEW_BUILD} - ${COMMIT_MESSAGE}"
 
 # ----------------------------
 # 7. Build Release Bundle
