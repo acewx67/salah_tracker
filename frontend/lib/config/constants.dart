@@ -1,6 +1,8 @@
 /// App-wide constants for prayer names, expected rakats, etc.
 library;
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class PrayerConstants {
   static const List<String> prayerNames = [
     'fajr',
@@ -85,7 +87,7 @@ class PrayerConstants {
 }
 
 class ApiConstants {
-  static const String baseUrl =
-      'http://192.168.29.13:8000'; // Physical device IP
+  static String get baseUrl =>
+      dotenv.env['BACKEND_URL'] ?? 'http://10.0.2.2:8000';
   static const String iosBaseUrl = 'http://localhost:8000';
 }
